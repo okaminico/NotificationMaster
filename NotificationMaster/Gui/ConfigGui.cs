@@ -62,6 +62,7 @@ internal partial class ConfigGui : IDisposable
                     DrawTab("Duty pop".Loc(), DrawCfPopConfig, p.cfg.cfPop_Enable);
                     DrawTab("Connection error".Loc(), DrawLoginErrorConfig, p.cfg.loginError_Enable);
                     DrawTab("Approaching map flag".Loc(), DrawMapFlagConfig, p.cfg.mapFlag_Enable);
+                    DrawTab("Arrived (vnavmesh)".Loc(), DrawArrivedConfig, p.cfg.arrived_Enable);
                     DrawTab("Mob pulled".Loc(), DrawMobPulledConfig, p.cfg.mobPulled_Enable);
                     DrawTab("PartyFinder".Loc(), DrawPartyFinderConfig, p.cfg.partyFinder_Enable);
                     DrawTab("Fish Notify".Loc(), DrawFishBiteConfig, p.cfg.fishBite_Enable);

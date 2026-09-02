@@ -77,6 +77,17 @@ internal class Configuration : IEzConfig
     public bool mapFlag_AlwaysExecute = false;
     public bool mapFlag_TataruPraise = true;
 
+    public bool arrived_Enable = false;
+    public bool arrived_FlashTrayIcon = true;
+    public bool arrived_AutoActivateWindow = false;
+    public bool arrived_ShowToastNotification = true;
+    public bool arrived_HttpRequestsEnable;
+    public List<HttpRequestElement> arrived_HttpRequests = [];
+    public SoundSettings arrived_SoundSettings = new();
+    public bool arrived_AlwaysExecute = false;
+    public bool arrived_TataruPraise = true;
+    public float arrived_DebounceSeconds = 1.5f;
+
     public bool mobPulled_Enable = false;
     public bool mobPulled_FlashTrayIcon = true;
     public bool mobPulled_AutoActivateWindow = false;

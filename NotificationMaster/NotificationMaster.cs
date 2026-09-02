@@ -18,6 +18,7 @@ public class NotificationMaster : IDalamudPlugin
     internal CfPop cfPop = null;
     internal LoginError loginError = null;
     internal ApproachingMapFlag mapFlag = null;
+    internal Arrived arrived = null;
     internal MobPulled mobPulled = null;
     internal PartyFinder partyFinder = null;
     internal FishBite fishBite = null;
@@ -65,6 +66,7 @@ public class NotificationMaster : IDalamudPlugin
             if(cfg.cfPop_Enable) CfPop.Setup(true, this);
             if(cfg.loginError_Enable) LoginError.Setup(true, this);
             if(cfg.mapFlag_Enable) ApproachingMapFlag.Setup(true, this);
+            if(cfg.arrived_Enable) Arrived.Setup(true, this);
             if(cfg.mobPulled_Enable) MobPulled.Setup(true, this);
             if(cfg.partyFinder_Enable) PartyFinder.Setup(true, this);
             if(cfg.fishBite_Enable) FishBite.Setup(true, this);
@@ -142,6 +144,7 @@ public class NotificationMaster : IDalamudPlugin
         CfPop.Setup(false, this);
         LoginError.Setup(false, this);
         ApproachingMapFlag.Setup(false, this);
+        Arrived.Setup(false, this);
         MobPulled.Setup(false, this);
         PartyFinder.Setup(false, this);
         FishBite.Setup(false, this);

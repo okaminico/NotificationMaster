@@ -44,6 +44,9 @@ internal static class TataruPraiseBridge
     /// <summary>命中聊天規則（關鍵字／私訊）。</summary>
     internal const string CategoryChatMessage = "私訊";
 
+    /// <summary>vnavmesh 自動導航剛結束（判定為抵達目的地，非中途被打斷重新規劃）。</summary>
+    internal const string CategoryArrived = "抵達";
+
     /// <summary>
     /// 請塔塔露念一句指定情境的話。對方沒安裝／沒開啟／池是空的都只是靜靜地什麼都不做。
     /// </summary>
