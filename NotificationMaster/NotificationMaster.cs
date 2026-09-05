@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using ECommons.Configuration;
 using ECommons.EzIpcManager;
+using NotificationMaster.Hub;
 using NotificationMaster.Notificators;
 using NotificationMasterAPI;
 
@@ -37,6 +38,10 @@ public class NotificationMaster : IDalamudPlugin
 
     internal IPC IPC;
     internal NotificationMasterApi NotificationMasterApi;
+
+    /// <summary>分類感知的通知樞紐（給<b>別的外掛</b>送通知進來用）。</summary>
+    /// <remarks>📌 本外掛自己的 13 個 notificator 刻意不走這裡，見 <see cref="NotificationHub"/>。</remarks>
+    internal NotificationHub Hub;
 
     [EzIPC("AutoDuty.IsStopped", false)] internal Func<bool> AutoDutyIsStopped;
 
@@ -89,6 +94,7 @@ public class NotificationMaster : IDalamudPlugin
                 "/pnotify resume|r - resume plugin operation").Loc()
             });
             IPC = new();
+            Hub = new();
             NotificationMasterApi = new(Svc.PluginInterface);
             EzIPC.Init(this);
         });
@@ -152,6 +158,9 @@ public class NotificationMaster : IDalamudPlugin
         ReadyCheck.Setup(false, this);
         PartyCutsceneEnded.Setup(false, this);
         BattleCountdown.Setup(false, this);
+        // 🔴 樞紐先註銷：它註冊的是對外的 IPC 端點，晚一步註銷等於留一扇門通往正在拆的東西。
+        //    Hub 可能是 null（TickScheduler 裡的初始化還沒跑完就被卸載），所以要判空。
+        Hub?.Dispose();
         ThreadUpdActivated.Dispose();
         audioPlayer.Dispose();
         cfg.Save();

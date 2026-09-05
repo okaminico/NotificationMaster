@@ -23,6 +23,25 @@ internal static class TataruPraiseBridge
     /// <summary>總開關開著而且池裡真的有可播的語音。<c>Func&lt;bool&gt;</c>。</summary>
     internal const string IpcIsAvailable = "TataruPraise.IsAvailable";
 
+    /// <summary>
+    /// <c>Func&lt;string, bool&gt;</c>：<b>指定的那個情境</b>現在出得了聲嗎
+    /// （總開關開著＋這個情境沒被關掉＋這個情境至少有一句已合成的語音）。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>閘門要問的是這一個，不是 <see cref="IpcIsAvailable"/>。</b>後者問的是
+    /// 「整池<b>有某個情境</b>播得出來」，於是「別的情境有語音、<b>呼叫端要的那個情境</b>一句都沒有」時
+    /// 照樣通過，接著 <c>Praise</c> 回 <c>false</c>——呼叫端就分不出「不能出聲」與「這次剛好沒出聲」。
+    /// <para>
+    /// 📌 它刻意<b>不看冷卻</b>：冷卻是「這次剛好不出聲」，不是「不能出聲」。
+    /// </para>
+    /// <para>
+    /// 🔴 舊版 TataruPraise 沒有註冊這個端點，<c>InvokeFunc</c> 會擲 <c>IpcNotReadyError</c>，
+    /// 剛好落進既有的 catch＝安靜不出聲，這是正確的 fail-safe。
+    /// <b>失敗時絕不可以退回去叫 <see cref="IpcIsAvailable"/></b>——那樣就把這個端點的意義整個抵銷掉了。
+    /// </para>
+    /// </remarks>
+    internal const string IpcIsAvailableFor = "TataruPraise.IsAvailableFor";
+
     /// <summary>從指定情境的誇獎池挑一句念。<c>Func&lt;string, bool&gt;</c>。</summary>
     internal const string IpcPraise = "TataruPraise.Praise";
 
@@ -83,8 +102,11 @@ internal static class TataruPraiseBridge
         {
             // 刻意不快取 subscriber：一次任務也就叫個幾次，省下來的那點開銷不值得
             // 為「TataruPraise 中途重載」留一份可能過期的狀態。
-            var available = Svc.PluginInterface.GetIpcSubscriber<bool>(IpcIsAvailable);
-            if(!available.InvokeFunc()) return;
+            // 🔴 問的是「這個情境」出不出得了聲，不是「整池有沒有東西」——後者會讓
+            //    「別的情境有語音、這個情境一句都沒有」照樣通過，呼叫端就分不出
+            //    「不能出聲」與「這次剛好沒出聲」。
+            var available = Svc.PluginInterface.GetIpcSubscriber<string, bool>(IpcIsAvailableFor);
+            if(!available.InvokeFunc(category)) return;
 
             var praise = Svc.PluginInterface.GetIpcSubscriber<string, bool>(IpcPraise);
             var queued = praise.InvokeFunc(category);

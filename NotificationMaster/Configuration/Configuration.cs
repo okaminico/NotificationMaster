@@ -1,4 +1,5 @@
 ﻿using ECommons.Configuration;
+using NotificationMaster.Hub;
 
 namespace NotificationMaster;
 
@@ -166,6 +167,48 @@ internal class Configuration : IEzConfig
     public SoundSettings fishBite_HeavySoundSettings = new();
     public bool fishBite_HttpRequestsEnable = false;
     public List<HttpRequestElement> fishBite_HttpRequests = [];
+
+    /// <summary>通知樞紐（<c>NotificationMaster.Notify</c> IPC）的總開關。</summary>
+    /// <remarks>
+    /// 🔴 預設<b>開</b>，這是刻意的：樞紐<b>只有別的外掛主動送東西進來才會有動作</b>，
+    /// 沒有任何外掛在用的時候它一句話都不會說。預設關的話，
+    /// 消費端接上之後使用者會遇到「我開了 AutoRetainer 的通知但沒反應」，
+    /// 而真正要開的開關在<b>另一個外掛</b>裡——那是查不出來的。
+    /// <para>
+    /// ⚠️ 逐事件的開關在 <see cref="hub_Routes"/>，逐外掛的開關在<b>各外掛自己</b>（一律預設關）。
+    /// 這個總開關是「我完全不要這個機制」用的。
+    /// </para>
+    /// </remarks>
+    public bool hub_Enable = true;
+
+    /// <summary>
+    /// 逐分類的路由表。<b>缺鍵＝<see cref="HubRoute.DefaultFor"/> 的預設路由。</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴 用字典而不是一堆布林欄位是<b>必要的</b>：EzConfig 會把 <c>false</c> 也寫進 JSON，
+    /// 布林欄位一旦寫進使用者的 <c>DefaultConfig.json</c> 就再也改不動預設（而且是靜默的）。
+    /// 詳見 <see cref="HubRoute"/> 的說明。
+    /// </remarks>
+    public Dictionary<string, HubRoute> hub_Routes = [];
+
+    /// <summary>樞紐所有分類共用的音效設定。</summary>
+    public SoundSettings hub_SoundSettings = new();
+
+    /// <summary>樞紐所有分類共用的 HTTP webhook 開關。</summary>
+    public bool hub_HttpRequestsEnable = false;
+
+    /// <summary>樞紐的 HTTP webhook。
+    /// 可用替換符號：<c>&lt;caller&gt;</c>、<c>&lt;category&gt;</c>、<c>&lt;title&gt;</c>、<c>&lt;body&gt;</c>。</summary>
+    public List<HttpRequestElement> hub_HttpRequests = [];
+
+    /// <summary>
+    /// 同一個「外掛＋分類」組合兩次通知之間的最短間隔（毫秒；0＝不節流）。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 這是<b>地板</b>不是策略：真正的「同一件事只響一次」必須由呼叫端在<b>狀態邊緣</b>上做。
+    /// 這裡只保證某個呼叫端把通知寫進輪詢迴圈時，不會把系統匣氣球洗爆。
+    /// </remarks>
+    public int hub_ThrottleMs = 3000;
 
     public void Initialize(IDalamudPluginInterface pluginInterface)
     {

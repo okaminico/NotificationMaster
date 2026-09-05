@@ -21,6 +21,17 @@ namespace NotificationMaster;
 /// 到旗標需要玩家自己在地圖上插旗標；這個看的是 vnavmesh 本身的導航狀態，不管
 /// 目的地是旗標、Questionable 的任務座標，還是其他外掛丟給 vnavmesh 的座標，都算。
 /// </para>
+/// <para>
+/// ⚠️ <b>「導航停了就是抵達了」本身是推測，不是證明。</b>
+/// vnavmesh 只公開「路徑還在不在跑」這一個旗標，沒有公開「這次是走到終點才停的，
+/// 還是被取消、被卡住、或被別的外掛接手」。這裡是拿「停下來而且在緩衝時間內沒有再啟動」
+/// 去逼近它，判準本身沒有被實機證明過。
+/// </para>
+/// <para>
+/// <b>假設不成立的後果只有兩種：漏報（真的抵達卻沒通知）或誤報（還沒到就通知）。</b>
+/// 這個模組只做通知動作（閃工作列、跳提示、播音效、請塔塔露念一句、送 webhook），
+/// 不移動角色、不施放技能、不碰原生指標，所以判錯不會做出危險的事，也不會讓遊戲崩潰。
+/// </para>
 /// </remarks>
 internal sealed class Arrived : IDisposable
 {
@@ -34,7 +45,19 @@ internal sealed class Arrived : IDisposable
     public Arrived(NotificationMaster plugin)
     {
         p = plugin;
-        sharedPathIsRunning = Svc.PluginInterface.GetOrCreateData<bool[]>(SharedPathRunningTag, () => [false]);
+        try
+        {
+            sharedPathIsRunning = Svc.PluginInterface.GetOrCreateData<bool[]>(SharedPathRunningTag, () => [false]);
+        }
+        catch(Exception e)
+        {
+            // GetOrCreateData 會在「同一個 tag 已經被別人用不相容的型別註冊」時擲例外
+            // (DataCacheTypeMismatchError)。這裡不讓它往上冒：本模組退回一份自己的、
+            // 永遠是 false 的陣列 ＝ 這個模組安靜地不觸發（fail-closed），
+            // 而不是讓一個通知模組把設定視窗或外掛初始化整個拖垮。
+            sharedPathIsRunning = [false];
+            PluginLog.Information($"[Arrived] 取不到 vnavmesh 的共享旗標（{SharedPathRunningTag}），本模組不會觸發：{e.Message}");
+        }
         Svc.Framework.Update += Watcher;
     }
 

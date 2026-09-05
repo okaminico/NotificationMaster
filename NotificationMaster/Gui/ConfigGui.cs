@@ -70,6 +70,9 @@ internal partial class ConfigGui : IDisposable
                     DrawTab("Ready check".Loc(), DrawReadyCheckConfig, p.cfg.readyCheck_Enable);
                     DrawTab("Party cutscene".Loc(), DrawPartyCutsceneConfig, p.cfg.partyCutscene_Enable);
                     DrawTab("Battle countdown".Loc(), DrawBattleCountdownConfig, p.cfg.countdown_Enable);
+                    // 併進既有分頁列，不另開視窗：樞紐是「事件 x 管道」的一張表，
+                    // 跟上面那些逐模組分頁是同一層級的東西。
+                    DrawTab("通知樞紐", DrawHubConfig, p.cfg.hub_Enable && p.cfg.hub_Routes.Count > 0);
                     PatreonBanner.RightTransparentTab();
                     ImGui.EndTabBar();
                 }

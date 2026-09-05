@@ -52,7 +52,7 @@ internal class BattleCountdown : IDisposable
         {
             if(!Svc.Data.GetExcelSheet<LogMessage>().TryGetRow(CountdownMessageRow, out var row))
             {
-                // 這則診斷刻意用 Information：使用者跑 LogLevel 2，Debug 收不到。
+                // 這則診斷刻意用 Information：使用者跑 LogLevel 1，Debug 收得到但單檔數十萬行會淹沒。
                 PluginLog.Information($"[BattleCountdown] 找不到 LogMessage#{CountdownMessageRow}，倒數通知不會觸發。");
                 return ([], -1);
             }
